@@ -1,6 +1,5 @@
 import time
 import cv2
-
 import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
@@ -10,13 +9,10 @@ from tqdm import tqdm
 from utils.dataset import TeamMateDataset
 from torchvision.models import mobilenet_v3_small
 
-
 if __name__ == '__main__':
 
-    if torch.cuda.is_available():
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
+    # Set device to GPU if available, otherwise CPU
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Create the datasets and dataloaders
     trainset = TeamMateDataset(n_images=50, train=True)
@@ -46,12 +42,11 @@ if __name__ == '__main__':
         model.train()
         train_loss = 0
 
-        # Batch Loop
+        # Batch Loop for Training
         for i, (images, labels) in tqdm(enumerate(trainloader), total=len(trainloader), leave=False):
 
-            # Move the data to the device (CPU or GPU)
-            images = images.reshape(-1, 3, 64, 64).to(device)
-            # labels = labels.reshape(-1, 1).to(device)
+            # Reshape images to include 3 channels by repeating the grayscale channel
+            images = images.reshape(-1, 1, 64, 64).repeat(1, 3, 1, 1).to(device)
             labels = labels.to(device)
 
             # Zero the parameter gradients
@@ -70,7 +65,7 @@ if __name__ == '__main__':
             optimizer.step()
 
             # Accumulate the loss
-            train_loss = train_loss + loss.item()
+            train_loss += loss.item()
 
         # Test the model
         model.eval()
@@ -78,11 +73,11 @@ if __name__ == '__main__':
         correct = 0
         total = 0
 
-        # Batch Loop
+        # Batch Loop for Testing
         for images, labels in tqdm(testloader, total=len(testloader), leave=False):
 
-            # Move the data to the device (CPU or GPU)
-            images = images.reshape(-1, 3, 64, 64).to(device)
+            # Reshape images to include 3 channels by repeating the grayscale channel
+            images = images.reshape(-1, 1, 64, 64).repeat(1, 3, 1, 1).to(device)
             labels = labels.to(device)
 
             # Forward pass
@@ -92,7 +87,7 @@ if __name__ == '__main__':
             loss = criterion(outputs, labels)
 
             # Accumulate the loss
-            test_loss = test_loss + loss.item()
+            test_loss += loss.item()
 
             # Get the predicted class from the maximum value in the output-list of class scores
             _, predicted = torch.max(outputs, 1)
@@ -123,3 +118,4 @@ if __name__ == '__main__':
         plt.ylabel('Loss')
         plt.legend()
         plt.savefig('lab8/task2_loss_plot.png')
+
