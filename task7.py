@@ -41,7 +41,7 @@ test_losses = []
 test_accuracies = []
 
 # Epoch loop
-for epoch in range(1, 10):  # Reduced to 10 epochs for quicker testing
+for epoch in range(1, 4):  # Reduced to 10 epochs for quicker testing
 
     # Start timer
     t = time.time_ns()
@@ -344,7 +344,7 @@ for epoch in range(1, 10):  # Reduced to 10 epochs for quicker testing
 
 
 
-    
+
 
     # Generate and save confusion matrix
     cm = confusion_matrix(all_labels, all_predictions)
