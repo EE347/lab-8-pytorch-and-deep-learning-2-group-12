@@ -49,8 +49,18 @@ def capture_and_classify():
         # Classify the face
         with torch.no_grad():
             output = model(face_tensor)
-            _, predicted = torch.max(output, 1)
-            label = "Teammate 0" if predicted.item() == 0 else "Teammate 1"
+            probabilities = torch.softmax(output, dim=1)  # Get probabilities
+            confidence, predicted = torch.max(probabilities, 1)
+
+            # Debug: Print raw output values
+            print("Model output (probabilities):", probabilities.cpu().numpy())
+            print("Predicted class:", predicted.item(), "Confidence:", confidence.item())
+
+            # Apply a confidence threshold to the prediction
+            if confidence.item() > 0.3:  # You can adjust this threshold if needed
+                label = "Teammate 0" if predicted.item() == 0 else "Teammate 1"
+            else:
+                label = "Uncertain"
 
         # Draw the bounding box and label on the frame
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
